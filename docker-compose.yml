@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: inventory-postgres
+    environment:
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory_password
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inventory_user -d inventory_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./inventory-backend
+      dockerfile: Dockerfile
+    container_name: inventory-backend
+    env_file:
+      - ./inventory-backend/.env
+    environment:
+      # Docker-specific overrides (service names, etc.)
+      DB_HOST: postgres
+      DB_PORT: 5432
+      # These can be overridden in .env file if needed
+      DB_USER: ${DB_USER:-inventory_user}
+      DB_PASSWORD: ${DB_PASSWORD:-inventory_password}
+      DB_NAME: ${DB_NAME:-inventory_db}
+      DB_SYNC: ${DB_SYNC:-true}
+      DB_SSL: ${DB_SSL:-false}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./inventory-backend:/app
+      - /app/node_modules
+
+  frontend:
+    build:
+      context: ./inventory-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000
+    container_name: inventory-frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
