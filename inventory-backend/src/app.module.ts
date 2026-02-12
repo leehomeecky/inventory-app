@@ -9,6 +9,8 @@ import { MiscellaneousModule } from './module/miscellaneous/miscellaneous.module
 import { StorageModule } from './shared/config/storage/storage.module';
 import { EnvModule } from './shared/config/env/env.module';
 import { DbModule } from './shared/config/db/db.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -18,6 +20,11 @@ import { DbModule } from './shared/config/db/db.module';
     ProductModule,
     StorageModule,
     MiscellaneousModule,
+
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
   ],
   controllers: [AppController],
   providers: [

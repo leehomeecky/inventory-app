@@ -5,5 +5,6 @@ export enum DbConfigTypeEnum {
 
 export enum StorageNameEnum {
   s3 = 's3',
+  local = 'local',
   cloudinary = 'cloudinary',
 }

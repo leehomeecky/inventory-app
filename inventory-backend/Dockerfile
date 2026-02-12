@@ -1,36 +1,31 @@
+# Stage 1: Build
 FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and install dependencies
 COPY package*.json ./
-
-# Install dependencies
-RUN npm ci
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
 
-# Build the application
+# Build app and prune dev dependencies
 RUN npm run build
+RUN npm prune --production --legacy-peer-deps
 
-# Production stage
+# Stage 2: Production
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
-# Install only production dependencies
-# Note: @faker-js/faker is needed in production for store reference generation
-RUN npm install --only=production
-
-# Copy built application from builder
+# Copy built app and production node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
 
-# Expose port
+# Expose backend port
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+# Run the application
+CMD ["node", "dist/main"]

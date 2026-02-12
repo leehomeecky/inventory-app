@@ -4,48 +4,9 @@ A full-stack inventory management system built with NestJS (TypeScript) backend,
 
 ## Quick Start
 
-### Configure environment
-
-1. **Create environment file in `inventory-backend/` Directory:**
-
-```env
-PORT=3000
-DB_HOST=postgres
-DB_PORT=5432
-DB_USER=inventory_user
-DB_PASSWORD=inventory_password
-DB_NAME=inventory_db
-DB_SYNC=true
-DB_SSL=false
-
-# Storage provider: cloudinary | s3
-DEFAULT_STORAGE=cloudinary
-
-# Cloudinary (used when DEFAULT_STORAGE=cloudinary)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# AWS S3 (used when DEFAULT_STORAGE=s3)
-AWS_REGION=your_aws_region
-AWS_S3_BUCKET=your_bucket_name
-AWS_ACCESS_KEY_ID=your_access_key_id
-AWS_SECRET_ACCESS_KEY=your_secret_access_key
-```
-
-**Note:** Replace the Cloudinary credentials (or S3 credentials) with your actual values.
-
-2. **Create environment file in `inventory-frontend/` Directory :**
-
-```env
-VITE_API_URL=http://localhost:3000
-```
-
 ### Using Docker (Recommended)
 
 The easiest way to run the entire application:
-
-**Note:** The `.env` file is loaded by Docker and keeps sensitive data out of `docker-compose.yml`.
 
 1. **Start the application:**
    ```bash
