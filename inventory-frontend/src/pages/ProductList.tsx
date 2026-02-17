@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { productApi, storeApi, handleApiError } from '../services/api';
 import type { Product, ProductFilters, ApiError, Store } from '../types';
@@ -7,6 +7,7 @@ import ErrorDisplay from '../components/ErrorDisplay';
 import './ProductList.css';
 
 const ITEMS_PER_PAGE = 12;
+const DEBOUNCE_DELAY = 1000; // 1s delay
 
 export default function ProductList() {
   const [loading, setLoading] = useState(true);
@@ -25,7 +26,10 @@ export default function ProductList() {
     total: 0,
   });
 
-  const loadProducts = async () => {
+  // Debounce timer ref
+  const debounceTimerRef = useRef<number | null>(null);
+
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -45,7 +49,7 @@ export default function ProductList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   const loadStores = async () => {
     try {
@@ -60,20 +64,25 @@ export default function ProductList() {
     loadStores();
   }, []);
 
+  // Debounced effect for filter changes
   useEffect(() => {
-    loadProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    filters.limit,
-    filters.offset,
-    filters.search,
-    filters.storeId,
-    filters.minPrice,
-    filters.maxPrice,
-    filters.category,
-    filters.minQuantity,
-    filters.maxQuantity,
-  ]);
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new timer
+    debounceTimerRef.current = setTimeout(() => {
+      loadProducts();
+    }, DEBOUNCE_DELAY);
+
+    // Cleanup function
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [loadProducts]);
 
   const handleFilterChange = (
     key: keyof ProductFilters,
